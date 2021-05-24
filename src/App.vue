@@ -24,7 +24,6 @@
       <v-spacer></v-spacer>
       <h2>Guilherme Alcântara</h2>
       <v-spacer></v-spacer>
-
       <v-btn
         href="https://github.com/vuetifyjs/vuetify/releases/latest"
         target="_blank"

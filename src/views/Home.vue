@@ -3,15 +3,18 @@
     <div class="d-flex flex-column flex-md-row justify-space-between">
       <v-col
         cols="12"
-        md="3"
+        md="4"
+        lg="3"
         v-for="(list, index) in lists"
         :key="index"
-        class="list--area d-flex flex-column"
+        class="align-center d-flex flex-column"
+        style="height: calc(100vh - 100px)"
       >
         <h2>{{ list.title }}</h2>
         <v-card class="list rounded-lg d-flex flex-column align">
           <draggable
-            class="ajust overflow-y-auto"
+            style="height: 87%"
+            class="overflow-y-auto"
             :name="'flip-list'"
             v-model="lists[index].items"
             v-bind="dragOptions"
@@ -19,37 +22,73 @@
           >
             <transition-group class="pa-4" tag="ul">
               <v-card
-                class="list-group-item pa-3 mt-3 rounded-lg d-flex justify-space-between align"
-                v-for="(element, index) in list.items"
-                :key="index"
+                class="pa-3 mt-3 rounded-lg align-center"
+                style="cursor: move"
+                v-for="(element, indexx) in list.items"
+                :key="indexx + 1"
               >
-                <div class="over" v-if="list.id == 2"></div>
-                <v-icon color="green" v-if="list.id == 2" style="z-index: 20">
-                  mdi-check
-                </v-icon>
-                <v-toolbar-title> {{ element.name }}</v-toolbar-title>
+                <v-row class="align-center">
+                  <div class="over" v-if="list.id == 2"></div>
+                  <v-col>
+                    <v-avatar class="rounded-circle">
+                      <v-icon
+                        color="green"
+                        v-if="list.id == 2"
+                        style="z-index: 20"
+                      >
+                        mdi-check
+                      </v-icon>
+                      <img
+                        @click.stop="
+                          dialogAvatar = true;
+                          avatarURL = element.avatar;
+                          selectedItem = element;
+                        "
+                        style="cursor: pointer"
+                        v-if="list.id != 2"
+                        :src="element.avatar"
+                        alt="Avatar"
+                      />
+                    </v-avatar>
+                  </v-col>
+                  <v-col
+                    order-sm="3"
+                    order-md="2"
+                    order-xl="3"
+                    class="d-flex justify-end"
+                  >
+                    <v-icon
+                      @click.stop="
+                        dialog = true;
+                        editInput = element.name;
+                        selectedItem = element;
+                      "
+                    >
+                      mdi-pencil-outline
+                    </v-icon>
+                    <v-icon
+                      @click.stop="
+                        dialogDelete = true;
+                        deleteProps.item = element;
+                        deleteProps.list = list.items;
+                      "
+                      color="red"
+                    >
+                      mdi-trash-can-outline
+                    </v-icon>
+                  </v-col>
 
-                <div>
-                  <v-icon
-                    @click.stop="
-                      dialog = true;
-                      editInput = element.name;
-                      selectedItem = element;
-                    "
+                  <v-col
+                    order-sm="2"
+                    order-md="3"
+                    order-xl="2"
+                    md="12"
+                    xl="6"
+                    class="text-md-center"
                   >
-                    mdi-pencil-outline
-                  </v-icon>
-                  <v-icon
-                    @click.stop="
-                      dialogDelete = true;
-                      deleteProps.item = element;
-                      deleteProps.list = list.items;
-                    "
-                    color="red"
+                    {{ element.name }}</v-col
                   >
-                    mdi-trash-can-outline
-                  </v-icon>
-                </div>
+                </v-row>
               </v-card>
             </transition-group>
           </draggable>
@@ -88,11 +127,10 @@
         <v-card>
           <v-toolbar color="primary" dark> <h2>Edit</h2></v-toolbar>
           <v-text-field
-            class="text ma-4"
+            class="ma-4"
             tag="input"
             v-model="editInput"
-            label="..."
-            solo
+            label="Name"
             @keypress.enter="closeDialog()"
           >
             <template v-slot:append>
@@ -142,6 +180,47 @@
         </v-card>
       </template>
     </v-dialog>
+
+    <v-dialog
+      transition="dialog-bottom-transition"
+      max-width="600"
+      v-model="dialogAvatar"
+    >
+      <template>
+        <v-card>
+          <v-toolbar color="primary" dark> <h2>Edit Avatar</h2></v-toolbar>
+          <v-text-field
+            class="ma-4"
+            tag="input"
+            v-model="avatarURL"
+            label="URL"
+          >
+            <template v-slot:append>
+              <v-fade-transition>
+                <v-icon v-if="avatarURL.length > 0" color="green">
+                  mdi-check
+                </v-icon>
+              </v-fade-transition>
+            </template>
+          </v-text-field>
+          <v-col cols="12 justify-center d-flex">
+            <img class="text-center" :src="avatarURL" alt="" width="30%" />
+          </v-col>
+          <v-card-actions class="justify-space-between">
+            <v-btn
+              color="success"
+              text
+              @click="
+                selectedItem.avatar = avatarURL;
+                dialogAvatar = false;
+              "
+              >Save</v-btn
+            >
+            <v-btn text @click="dialogAvatar = false">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </template>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -149,17 +228,31 @@
 import draggable from "vuedraggable";
 
 const message = [
-  "vue.draggable",
-  "draggable",
-  "component",
-  "for",
-  "vue.js 2.0",
-  "based",
-  "on",
-  "Sortablejs",
-  "Sortablejs",
-  "Sortablejs",
-  "Sortablejs",
+  {
+    name: "vue.draggable",
+    avatar:
+      "https://avataaars.io/?avatarStyle=Circle&topType=LongHairBigHair&accessoriesType=Prescription02&hairColor=Platinum&facialHairType=MoustacheMagnum&facialHairColor=BrownDark&clotheType=Hoodie&clotheColor=Gray01&eyeType=Squint&eyebrowType=Default&mouthType=ScreamOpen&skinColor=DarkBrown",
+  },
+  {
+    name: "draggable",
+    avatar:
+      "https://avataaars.io/?avatarStyle=Circle&topType=ShortHairTheCaesar&accessoriesType=Prescription01&hairColor=BlondeGolden&facialHairType=MoustacheMagnum&facialHairColor=Red&clotheType=ShirtVNeck&clotheColor=Black&eyeType=Close&eyebrowType=Default&mouthType=Twinkle&skinColor=Pale",
+  },
+  {
+    name: "component",
+    avatar:
+      "https://avataaars.io/?avatarStyle=Circle&topType=ShortHairTheCaesar&accessoriesType=Sunglasses&hairColor=Auburn&facialHairType=BeardMedium&facialHairColor=Black&clotheType=BlazerShirt&clotheColor=PastelRed&eyeType=Surprised&eyebrowType=UnibrowNatural&mouthType=Twinkle&skinColor=Tanned",
+  },
+  {
+    name: "for",
+    avatar:
+      "https://avataaars.io/?avatarStyle=Circle&topType=LongHairDreads&accessoriesType=Kurt&hairColor=Black&facialHairType=BeardLight&facialHairColor=Auburn&clotheType=ShirtCrewNeck&clotheColor=Pink&eyeType=Hearts&eyebrowType=Angry&mouthType=Sad&skinColor=Brown",
+  },
+  {
+    name: "vue.js 2.0",
+    avatar:
+      "https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraightStrand&accessoriesType=Kurt&hairColor=Auburn&facialHairType=Blank&clotheType=ShirtVNeck&clotheColor=Pink&eyeType=Wink&eyebrowType=UpDown&mouthType=Concerned&skinColor=Black",
+  },
 ];
 export default {
   name: "Home",
@@ -173,8 +266,8 @@ export default {
           title: "To do",
           id: 0,
           newTask: null,
-          items: message.map((name) => {
-            return { name, done: false };
+          items: message.map((element) => {
+            return { name: element.name, avatar: element.avatar };
           }),
         },
         { title: "Doing", id: 1, newTask: null, items: [] },
@@ -185,8 +278,9 @@ export default {
       delayedDragging: false,
       selectedItem: {},
       editInput: null,
-      controlDialog: true,
+      avatarURL: null,
       dialog: false,
+      dialogAvatar: false,
       dialogDelete: false,
       deleteProps: {
         item: {},
@@ -205,10 +299,13 @@ export default {
       }
     },
     addItem(list) {
-      list.items.push({
-        name: list.newTask,
-        done: false,
-      });
+      if (list.newTask.length > 0) {
+        list.items.push({
+          name: list.newTask,
+          avatar:
+            "https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraightStrand&accessoriesType=Kurt&hairColor=Auburn&facialHairType=Blank&clotheType=ShirtVNeck&clotheColor=Pink&eyeType=Wink&eyebrowType=UpDown&mouthType=Concerned&skinColor=Black",
+        });
+      }
       list.newTask = null;
     },
     removeItem() {
@@ -253,38 +350,17 @@ export default {
   border-radius: inherit;
   z-index: 10;
 }
-
-.ajust {
-  height: 87% !important;
-}
-
 .ghost {
   opacity: 0.5;
   background: #c8ebfb !important ;
 }
-
-.list--area {
-  height: calc(100vh - 100px);
-  flex-grow: 0;
-  align-items: center;
-}
-
-.text {
-  align-items: flex-end !important;
-}
-
 .list {
   width: 100%;
   height: 95%;
-  background: #f5f5f5;
 }
 
 ul {
   height: 100%;
   list-style: none;
-}
-
-.list-group-item {
-  cursor: move;
 }
 </style>
